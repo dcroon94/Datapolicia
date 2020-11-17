@@ -1,5 +1,3 @@
 # Datapolicia
 
-hallo
-
-Bongornio
+Opzetten van de Politie API
