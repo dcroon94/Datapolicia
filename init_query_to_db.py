@@ -46,6 +46,7 @@ df_policia = df_policia.sort_index()
 #(PRIMARY) KEY kandidaten
 df_policia.columns[df_policia.nunique() == df_policia.shape[0]]
 df_policia['uid'].is_unique
+#moeten we deze nog toekennen via bv. SQL alchemy?
 
 ## LOAD DATA TO POSTGRESSQL DATABASE
 
