@@ -1,9 +1,13 @@
 from matplotlib import pyplot as plt
 import pandas as pd
+import numpy as np
 
 ##GET DATA FROM POSTGRESSQL DATABASE
-#query SELECT * FROM ...
-#df_policia = ...
+#query SELECT * FROM ... (kan ook met pandas)
+#df_policia =
+
+df_policia = pd.read_sql_table('crime_api', con='postgres://avnadmin:qfycnefpdql4761s@pg-4b474b0-dennis-d0f3.aivencloud.com:25938/defaultdb?sslmode=require')
+df_policia = df_policia.convert_dtypes()
 
 ##EXPLORATIEF ONDERZOEK
 
@@ -16,9 +20,9 @@ describe_data = df_policia.describe(include="all").transpose()
 #exploratief onderzoek naar plaatsdelict
 count_plaatsen = df_policia["verdachte_plaatsdelict"].value_counts(dropna=True)
 count_plaatsen_groter10 = count_plaatsen[count_plaatsen > 10]
-
+#
 #top 5 van plaats delicten
-#count_plaatsen[:5]
+count_plaatsen[:5]
 #genumereerde lijst met plaatsnaam en aantal
 genumereerde_lijst = list(enumerate(zip(count_plaatsen.index, count_plaatsen)))
 #vind op welke plaats Leiden staat
@@ -29,8 +33,8 @@ plt.bar(count_plaatsen_groter10.index, np.array(count_plaatsen_groter10), color=
 plt.xlabel("Steden in Nederland")
 plt.ylabel("Aantal verdachte gebeurtenissen")
 plt.show()
-
-#maak eenn nieuwe kolom aan met enkel het jaartal van datum delcit
+#
+# #maak eenn nieuwe kolom aan met enkel het jaartal van datum delcit
 df_policia["verdachte_datumdelict_jaar"] = df_policia["verdachte_datumdelict"].dt.year
 #bekijk het aantal verdachte incidenten per jaar
 df_policia["verdachte_datumdelict_jaar"].value_counts()
@@ -42,5 +46,6 @@ df_policia.loc[df_policia["verdachte_datumdelict_jaar"] == 2020, "verdachte_plaa
 cross_plaats_jaar = pd.crosstab(df_policia["verdachte_plaatsdelict"], df_policia["verdachte_datumdelict_jaar"])
 cross_plaats_jaar = cross_plaats_jaar.sort_values(by=2020.0, ascending=False)
 cross_plaats_jaar.loc[:, cross_plaats_jaar.columns > 2015]
+
 
 
