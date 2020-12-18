@@ -4,8 +4,6 @@ import numpy as np
 
 ##GET DATA FROM POSTGRESSQL DATABASE
 #query SELECT * FROM ... (kan ook met pandas)
-#df_policia =
-
 df_policia = pd.read_sql_table('crime_api', con='postgres://avnadmin:qfycnefpdql4761s@pg-4b474b0-dennis-d0f3.aivencloud.com:25938/defaultdb?sslmode=require')
 df_policia = df_policia.convert_dtypes()
 
@@ -29,12 +27,12 @@ genumereerde_lijst = list(enumerate(zip(count_plaatsen.index, count_plaatsen)))
 list(count_plaatsen.index).index("Leiden")
 
 # #maak een barplot van het aantal
-plt.bar(count_plaatsen_groter10.index, np.array(count_plaatsen_groter10), color='green')
-plt.xlabel("Steden in Nederland")
-plt.ylabel("Aantal verdachte gebeurtenissen")
-plt.show()
-#
-# #maak eenn nieuwe kolom aan met enkel het jaartal van datum delcit
+# plt.bar(count_plaatsen_groter10.index, np.array(count_plaatsen_groter10), color='green')
+# plt.xlabel("Steden in Nederland")
+# plt.ylabel("Aantal verdachte gebeurtenissen")
+# plt.show()
+
+#maak eenn nieuwe kolom aan met enkel het jaartal van datum delcit
 df_policia["verdachte_datumdelict_jaar"] = df_policia["verdachte_datumdelict"].dt.year
 #bekijk het aantal verdachte incidenten per jaar
 df_policia["verdachte_datumdelict_jaar"].value_counts()

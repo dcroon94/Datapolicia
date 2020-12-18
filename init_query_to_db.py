@@ -12,7 +12,7 @@ df_policia = get_init_data()
 ## DATA PREPPING
 
 #haal alle datatypes op, alle zijn objecten
-print(df_policia.dtypes)
+df_policia.dtypes
 
 # KOLOMNAMEN
 #aanpassen kolomnamen van '-' naar '_'
@@ -58,5 +58,5 @@ df_policia['uid'].is_unique
 #Methode 2: direct via pandas to_sql
 df_policia.to_sql(name='crime_api',
                  con='postgres://avnadmin:qfycnefpdql4761s@pg-4b474b0-dennis-d0f3.aivencloud.com:25938/defaultdb?sslmode=require',
-                 if_exists='fail')  #of 'fail', append
+                 if_exists='replace')  #of 'fail', append
                  #databasetype://admin:wachtwoord@host:port/naam_database
