@@ -1,32 +1,61 @@
+#importeer get_init_data uit init_query.py
 from init_query import get_init_data
+#importeer paketten
 import pandas as pd
 import numpy as np
-#even kijken of deze hier zo moet blijven staan als we gaan werken met airflow of dat het de uitput is van de vorige flow
+from sqlalchemy import create_engine
+
+## GET DATA
+#even kijken of het zo moet blijven staan als we gaan werken met airflow of dat het de uitput is van de vorige flow
 df_policia = get_init_data()
 
-df_policia = df_policia.dropna(how='all', axis=1)
-df_policia['locaties']= df_policia['locaties'].astype('str')
-df_policia = df_policia.convert_dtypes()
+## DATA PREPPING
 
-df_policia= df_policia.select_dtypes(exclude=['object'])
-df_policia.index = np.array(range(1519, 0, -1))
-df_policia=df_policia.sort_index()
+#haal alle datatypes op, alle zijn objecten
+print(df_policia.dtypes)
 
+# KOLOMNAMEN
 #aanpassen kolomnamen van '-' naar '_'
-df_policia.columns = df_policia.columns.str.replace('-','_')
+df_policia.columns = df_policia.columns.str.replace('-', '_')
 
-#print(df_policia.dtypes)
-from sqlalchemy import create_engine
-engine = create_engine('postgres://avnadmin:qfycnefpdql4761s@pg-4b474b0-dennis-d0f3.aivencloud.com:25938/defaultdb?sslmode=require', echo=True)
+# NA'S TOEWIJZEN EN LEGE VARIABELEN VERWIJDEREN
+#vervang alle lege waardes "" met daadwerkelijke NaN waardes
+df_policia = df_policia.replace("", np.NaN)
+#verwijder alle variabelen die volledig gevuld met NA's zijn
+df_policia = df_policia.dropna(how='all', axis=1)
 
+# CONVERTEER TYPES EN VERWIJDER OVERBODIGE TYPES
+#converteer de typen van object naar het juiste format
+df_policia = df_policia.convert_dtypes()
+#Zet alle string datum om naar datetime types (alle waardesm met datum delict hebben het format YYYY-mm-dd
+df_policia.loc[:,df_policia.columns.str.contains("datumdelict")] = df_policia.filter(regex="datumdelict").apply(pd.to_datetime, format="%Y-%m-%d")
+#Publicatie datum toont ook de uren, minuten en seconden
+df_policia["publicatiedatum"] = pd.to_datetime(df_policia["publicatiedatum"], format="%Y-%m-%d %H:%M:%S")
+#pas locaties (een nested list) aan naar string waarde
+df_policia['locaties']= df_policia['locaties'].astype('str')
+#verwijder alle object types van de dataset
+df_policia = df_policia.select_dtypes(exclude='object')
+# alternatief: df_policia.loc[:,list(df_policia.dtypes != "object")]
 
-#df_test = pd.DataFrame({"test1","test2","test3","test4",'2018-12-19 09:26:03.47',"test6","test7","test8",890890890,"test10","test11","test12","test13","test14","test15","test16","test17","test18",'2018-12-19 09:26:03.47',"test20","test21","test22","test23","test24","test25","test26","test27",'2018-12-19 09:26:03.47',"test29","test30","test31","test32","test33",'2018-12-19 09:26:03.47',"test35","test36","test37","test38","test39","test40","test41","test42","test43"})
-df_policia.to_sql('crime_api', con=engine, if_exists='replace') #append
+# STEL INDEX OPNIEUW IN
+#Wijs range met index toe aan de huidige dataset (meest recent: hoogste index, oudst: eerste index)
+df_policia.index = np.array(range(df_policia.shape[0], 0, -1))
+#sorteer oplopend, zodat deze dus gesorteerd is op basis van wanneer bericht geplaatst is (oudste bericht als eerste)
+df_policia = df_policia.sort_index()
 
+#(PRIMARY) KEY kandidaten
+df_policia.columns[df_policia.nunique() == df_policia.shape[0]]
+df_policia['uid'].is_unique
+
+## LOAD DATA TO POSTGRESSQL DATABASE
+
+#Methode 1: via SQL alchemy engine
+#engine = create_engine('postgres://avnadmin:qfycnefpdql4761s@pg-4b474b0-dennis-d0f3.aivencloud.com:25938/defaultdb?sslmode=require', echo=True)
+#df_policia.to_sql('crime_api', con=engine, if_exists='replace')
 #engine.execute("SELECT * FROM crime_api").fetchall()
 
-#df_policia.to_sql(name='crime_api',
- #                con='postgres://avnadmin:qfycnefpdql4761s@pg-4b474b0-dennis-d0f3.aivencloud.com:25938/defaultdb?sslmode=require',
-  #               #databasetype://admin:wachtwoord@host:port/defaultdb
-   #              if_exists='append')#of 'fail',)
-
+#Methode 2: direct via pandas to_sql
+df_policia.to_sql(name='crime_test',
+                 con='postgres://avnadmin:qfycnefpdql4761s@pg-4b474b0-dennis-d0f3.aivencloud.com:25938/defaultdb?sslmode=require',
+                 if_exists='replace')  #of 'fail', append
+                 #databasetype://admin:wachtwoord@host:port/naam_database
