@@ -18,6 +18,8 @@ def get_init_data():
     #initialisatie van variabelen
     df_policia = pd.DataFrame() #creeer een lege dataframe
     offset = 0 #initialiseer de offset op 0
+    # initialiseer een lege lijst voor de locaties
+    loc_list = []
 
     #draai een while loop totdat de query geen resultaten meer vindt, stop dan de loop.
     while True:
@@ -25,9 +27,6 @@ def get_init_data():
         ##OFFSET
         #vervang de offset parameter met een vermenigvuldiging van 25, vang aan met 0 en dan per loop + 25.
         params["offset"] = offset
-        #tel voor de volgende loop er 25 bij op.
-        offset += 25
-
         ##REQUEST
         #voer de request uit met de gegeven parameters en offset
         response = requests.get(url=api_url, params=params)
@@ -46,9 +45,6 @@ def get_init_data():
         ##LOCATIES
         #verkrijg de coordinaten (locatie) bij alle verdachte incidenten.
 
-        #initialiseer een lege lijst
-        loc_list = []
-
         #loop langs het aantal berichten in de laatste opgehaalde API query en zet alle coordinaten om tot een np.array
         #dit is nodig omdat een incident meerdere locaties kan hebben en dus niet een keer kan worden omgezet. Het aantal
         #berichten is in principe 25 alleen bij de laatste loop is dit mogelijk kleiner dan 25.
@@ -63,11 +59,15 @@ def get_init_data():
         #herhaal dit voor alle berichten
 
         #wijs deze lijst aan arrays met coordinaten toe aan de dataset van deze set berichten
-        df_unnested_berichten["locaties"] = loc_list
 
         #voeg de dataframe van deze set  berichten toe aan de policia dataset
         df_policia = df_policia.append(df_unnested_berichten)
         print("aantal rijen in dataframe:", len(df_policia))
+
+        # tel voor de volgende loop 25 bij de offset op.
+        offset += 25
+
+    df_policia["locaties"] = loc_list
 
     return df_policia
 
