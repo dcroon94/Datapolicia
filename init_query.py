@@ -12,12 +12,11 @@ def get_init_data():
     api_url = "https://api.politie.nl/v4/gezocht"
     #de parameters voor de request, initialiseer offset met 0.
     params = {"language": "nl",
-              "maxnumberofitems": "25",
-              "offset": 0} #kan enkel een vermenigvuldiging zijn van het aantal items
+              "maxnumberofitems": "25"} #kan enkel een vermenigvuldiging zijn van het aantal items
 
     #initialisatie van variabelen
     df_policia = pd.DataFrame() #creeer een lege dataframe
-    offset = 0 #initialiseer de offset op 0
+    offset = 50 #initialiseer de offset op 0
     # initialiseer een lege lijst voor de locaties
     loc_list = []
 
